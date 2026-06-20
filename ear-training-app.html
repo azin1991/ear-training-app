@@ -7,20 +7,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&display=swap" rel="stylesheet">
 <style>
-  /* ── Palette ──────────────────────────────────────────
-     #778DA9  steel-blue   — borders, muted text, subtle bg
-     #415A77  mid-navy     — primary buttons, accents
-     #1B263B  deep-navy    — headings, strong text
-     #0D1B2A  near-black   — darkest accents, hover states
-     #ffffff  white        — page background
-     #f4f6f9  off-white    — card backgrounds
-  ────────────────────────────────────────────────────── */
-
   * { box-sizing: border-box; }
   body { margin: 0; font-family: 'Noto Sans Math', sans-serif; background: #ffffff; color: #1B263B; }
   h1, h2, h3 { font-family: 'Noto Sans Math', sans-serif; }
@@ -259,79 +249,143 @@
 </head>
 <body>
 <div id="app"></div>
-
-<script type="text/babel">
-const { useState, useRef, useEffect } = React;
+<script>
+const {
+  useState,
+  useRef,
+  useEffect
+} = React;
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
-const INTERVALS = [
-  { name: 'Minor 2nd',  semitones: 1  },
-  { name: 'Major 2nd',  semitones: 2  },
-  { name: 'Minor 3rd',  semitones: 3  },
-  { name: 'Major 3rd',  semitones: 4  },
-  { name: 'Perfect 4th',semitones: 5  },
-  { name: 'Tritone',    semitones: 6  },
-  { name: 'Perfect 5th',semitones: 7  },
-  { name: 'Minor 6th',  semitones: 8  },
-  { name: 'Major 6th',  semitones: 9  },
-  { name: 'Minor 7th',  semitones: 10 },
-  { name: 'Major 7th',  semitones: 11 },
-  { name: 'Perfect 8th',semitones: 12 },
-  { name: 'Minor 9th',  semitones: 13 },
-  { name: 'Major 9th',  semitones: 14 },
-];
-
-// Chord definitions: semitone offsets from root
-// For 4-note chords with two voicings, we store both under one checkbox key
-const CHORDS = [
-  { key: 'major_triad',    name: 'Major Triad',           voicings: [{ label: 'Major Triad',           semitones: [0,4,7]    }] },
-  { key: 'minor_triad',    name: 'Minor Triad',           voicings: [{ label: 'Minor Triad',           semitones: [0,3,7]    }] },
-  { key: 'aug_triad',      name: 'Augmented Triad',       voicings: [{ label: 'Augmented Triad',       semitones: [0,4,8]    }] },
-  { key: 'dom7',           name: 'Dominant 7th',          voicings: [{ label: 'Dominant 7th',          semitones: [0,4,7,10] }] },
-  { key: 'dim7',           name: 'Diminished 7th',        voicings: [{ label: 'Diminished 7th',        semitones: [0,3,6,9]  }] },
-  { key: 'maj_maj7',       name: 'Major Major 7th',       voicings: [{ label: 'Major Major 7th',       semitones: [0,4,7,11] }] },
-  { key: 'min_min7',       name: 'Minor Minor 7th',       voicings: [{ label: 'Minor Minor 7th',       semitones: [0,3,7,10] }] },
-  {
-    key: 'maj4_root_1st',
-    name: 'Major 4-Note Chord',
-    badge: 'Root & 1st Inv.',
-    voicings: [
-      { label: 'Major 4-Note — Root Position', semitones: [0,4,7,12]    },
-      { label: 'Major 4-Note — 1st Inversion', semitones: [0,3,8,12]    }, // E G# C E (maj root shifted)
-    ]
-  },
-  {
-    key: 'min4_root_1st',
-    name: 'Minor 4-Note Chord',
-    badge: 'Root & 1st Inv.',
-    voicings: [
-      { label: 'Minor 4-Note — Root Position', semitones: [0,3,7,12]    },
-      { label: 'Minor 4-Note — 1st Inversion', semitones: [0,4,9,12]    },
-    ]
-  },
-];
-
-// Piano note range C3–D5 (safe for all chords, max +14 semitones)
-const ALL_NOTES = [
-  'C3','C#3','D3','D#3','E3','F3','F#3','G3','G#3','A3','A#3','B3',
-  'C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4','A4','A#4','B4',
-  'C5','C#5','D5',
-];
-
-// ─── PIANO SAMPLER SINGLETON ──────────────────────────────────────────────────
-
+const INTERVALS = [{
+  name: 'Minor 2nd',
+  semitones: 1
+}, {
+  name: 'Major 2nd',
+  semitones: 2
+}, {
+  name: 'Minor 3rd',
+  semitones: 3
+}, {
+  name: 'Major 3rd',
+  semitones: 4
+}, {
+  name: 'Perfect 4th',
+  semitones: 5
+}, {
+  name: 'Tritone',
+  semitones: 6
+}, {
+  name: 'Perfect 5th',
+  semitones: 7
+}, {
+  name: 'Minor 6th',
+  semitones: 8
+}, {
+  name: 'Major 6th',
+  semitones: 9
+}, {
+  name: 'Minor 7th',
+  semitones: 10
+}, {
+  name: 'Major 7th',
+  semitones: 11
+}, {
+  name: 'Perfect 8th',
+  semitones: 12
+}, {
+  name: 'Minor 9th',
+  semitones: 13
+}, {
+  name: 'Major 9th',
+  semitones: 14
+}];
+const CHORDS = [{
+  key: 'major_triad',
+  name: 'Major Triad',
+  voicings: [{
+    label: 'Major Triad',
+    semitones: [0, 4, 7]
+  }]
+}, {
+  key: 'minor_triad',
+  name: 'Minor Triad',
+  voicings: [{
+    label: 'Minor Triad',
+    semitones: [0, 3, 7]
+  }]
+}, {
+  key: 'aug_triad',
+  name: 'Augmented Triad',
+  voicings: [{
+    label: 'Augmented Triad',
+    semitones: [0, 4, 8]
+  }]
+}, {
+  key: 'dom7',
+  name: 'Dominant 7th',
+  voicings: [{
+    label: 'Dominant 7th',
+    semitones: [0, 4, 7, 10]
+  }]
+}, {
+  key: 'dim7',
+  name: 'Diminished 7th',
+  voicings: [{
+    label: 'Diminished 7th',
+    semitones: [0, 3, 6, 9]
+  }]
+}, {
+  key: 'maj_maj7',
+  name: 'Major Major 7th',
+  voicings: [{
+    label: 'Major Major 7th',
+    semitones: [0, 4, 7, 11]
+  }]
+}, {
+  key: 'min_min7',
+  name: 'Minor Minor 7th',
+  voicings: [{
+    label: 'Minor Minor 7th',
+    semitones: [0, 3, 7, 10]
+  }]
+}, {
+  key: 'maj4_root_1st',
+  name: 'Major 4-Note Chord',
+  badge: 'Root & 1st Inv.',
+  voicings: [{
+    label: 'Major 4-Note — Root Position',
+    semitones: [0, 4, 7, 12]
+  }, {
+    label: 'Major 4-Note — 1st Inversion',
+    semitones: [0, 3, 8, 12]
+  }]
+}, {
+  key: 'min4_root_1st',
+  name: 'Minor 4-Note Chord',
+  badge: 'Root & 1st Inv.',
+  voicings: [{
+    label: 'Minor 4-Note — Root Position',
+    semitones: [0, 3, 7, 12]
+  }, {
+    label: 'Minor 4-Note — 1st Inversion',
+    semitones: [0, 4, 9, 12]
+  }]
+}];
+const ALL_NOTES = ['C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3', 'A3', 'A#3', 'B3', 'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4', 'C5', 'C#5', 'D5'];
 let pianoSampler = null;
 let samplerReady = false;
 let samplerLoading = false;
-
-// Uses Tone.js Salamander piano samples via GitHub CDN
 function getPianoSampler() {
   if (pianoSampler) return Promise.resolve(pianoSampler);
   if (samplerLoading) {
     return new Promise(resolve => {
       const check = setInterval(() => {
-        if (samplerReady) { clearInterval(check); resolve(pianoSampler); }
+        if (samplerReady) {
+          clearInterval(check);
+          resolve(pianoSampler);
+        }
       }, 100);
     });
   }
@@ -339,14 +393,36 @@ function getPianoSampler() {
   return new Promise((resolve, reject) => {
     pianoSampler = new Tone.Sampler({
       urls: {
-        A0: 'A0.mp3', C1: 'C1.mp3', 'D#1': 'Ds1.mp3', 'F#1': 'Fs1.mp3',
-        A1: 'A1.mp3', C2: 'C2.mp3', 'D#2': 'Ds2.mp3', 'F#2': 'Fs2.mp3',
-        A2: 'A2.mp3', C3: 'C3.mp3', 'D#3': 'Ds3.mp3', 'F#3': 'Fs3.mp3',
-        A3: 'A3.mp3', C4: 'C4.mp3', 'D#4': 'Ds4.mp3', 'F#4': 'Fs4.mp3',
-        A4: 'A4.mp3', C5: 'C5.mp3', 'D#5': 'Ds5.mp3', 'F#5': 'Fs5.mp3',
-        A5: 'A5.mp3', C6: 'C6.mp3', 'D#6': 'Ds6.mp3', 'F#6': 'Fs6.mp3',
-        A6: 'A6.mp3', C7: 'C7.mp3', 'D#7': 'Ds7.mp3', 'F#7': 'Fs7.mp3',
-        A7: 'A7.mp3', C8: 'C8.mp3',
+        A0: 'A0.mp3',
+        C1: 'C1.mp3',
+        'D#1': 'Ds1.mp3',
+        'F#1': 'Fs1.mp3',
+        A1: 'A1.mp3',
+        C2: 'C2.mp3',
+        'D#2': 'Ds2.mp3',
+        'F#2': 'Fs2.mp3',
+        A2: 'A2.mp3',
+        C3: 'C3.mp3',
+        'D#3': 'Ds3.mp3',
+        'F#3': 'Fs3.mp3',
+        A3: 'A3.mp3',
+        C4: 'C4.mp3',
+        'D#4': 'Ds4.mp3',
+        'F#4': 'Fs4.mp3',
+        A4: 'A4.mp3',
+        C5: 'C5.mp3',
+        'D#5': 'Ds5.mp3',
+        'F#5': 'Fs5.mp3',
+        A5: 'A5.mp3',
+        C6: 'C6.mp3',
+        'D#6': 'Ds6.mp3',
+        'F#6': 'Fs6.mp3',
+        A6: 'A6.mp3',
+        C7: 'C7.mp3',
+        'D#7': 'Ds7.mp3',
+        'F#7': 'Fs7.mp3',
+        A7: 'A7.mp3',
+        C8: 'C8.mp3'
       },
       release: 1.2,
       baseUrl: 'https://tonejs.github.io/audio/salamander/',
@@ -355,80 +431,88 @@ function getPianoSampler() {
         samplerLoading = false;
         resolve(pianoSampler);
       },
-      onerror: (err) => {
+      onerror: err => {
         samplerLoading = false;
         reject(err);
       }
     }).toDestination();
   });
 }
-
-// Convert note name like "C#4" to MIDI number
 function noteToMidi(note) {
-  const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const match = note.match(/^([A-G]#?)(\d)$/);
   if (!match) return null;
   const pitch = noteNames.indexOf(match[1]);
   const octave = parseInt(match[2]);
   return pitch + (octave + 1) * 12;
 }
-
-// Convert MIDI number back to note name
 function midiToNote(midi) {
-  const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const octave = Math.floor(midi / 12) - 1;
   const pitch = midi % 12;
   return noteNames[pitch] + octave;
 }
-
-// ─── LOGO ─────────────────────────────────────────────────────────────────────
 const LOGO_URL = 'https://static.wixstatic.com/media/3595a0_7dd07b5a57e046eb8ba30ea2e1a49edd~mv2.png';
-
-// ─── PDF EXPORT ───────────────────────────────────────────────────────────────
-
 async function exportToPDF(practiceLog, count, mode) {
-  const { jsPDF } = window.jspdf;
+  const {
+    jsPDF
+  } = window.jspdf;
   const doc = new jsPDF();
   const attemptsToExport = practiceLog.slice(-count);
   const correctCount = attemptsToExport.filter(l => l.correct).length;
-  const accuracy = ((correctCount / count) * 100).toFixed(1);
+  const accuracy = (correctCount / count * 100).toFixed(1);
   const modeLabel = mode === 'interval' ? 'Interval Training' : 'Chord Training';
-
   try {
     const logoImg = new Image();
     logoImg.crossOrigin = 'anonymous';
     logoImg.src = LOGO_URL;
     await new Promise(resolve => {
       logoImg.onload = () => {
-        const lw = 50, lh = 30, xPos = (doc.internal.pageSize.width - lw) / 2;
+        const lw = 50,
+          lh = 30,
+          xPos = (doc.internal.pageSize.width - lw) / 2;
         doc.addImage(logoImg, 'PNG', xPos, 10, lw, lh);
         resolve();
       };
       logoImg.onerror = () => resolve();
     });
   } catch {}
-
   doc.setFontSize(20);
   doc.setFont(undefined, 'bold');
-  doc.text(modeLabel + ' Practice Report', 105, 45, { align: 'center' });
+  doc.text(modeLabel + ' Practice Report', 105, 45, {
+    align: 'center'
+  });
   doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
   const now = new Date();
-  doc.text(now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + ' at ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), 105, 52, { align: 'center' });
-
+  doc.text(now.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) + ' at ' + now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit'
+  }), 105, 52, {
+    align: 'center'
+  });
   doc.setFillColor(240, 248, 255);
   doc.roundedRect(20, 60, 170, 25, 3, 3, 'F');
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text('Practice Summary (Last ' + count + ' Attempts)', 105, 70, { align: 'center' });
+  doc.text('Practice Summary (Last ' + count + ' Attempts)', 105, 70, {
+    align: 'center'
+  });
   doc.setFont(undefined, 'normal');
-  doc.text('Correct: ' + correctCount + ' / ' + count, 105, 77, { align: 'center' });
+  doc.text('Correct: ' + correctCount + ' / ' + count, 105, 77, {
+    align: 'center'
+  });
   doc.setFontSize(14);
   doc.setFont(undefined, 'bold');
   doc.setTextColor(correctCount >= count * 0.7 ? 0 : 220, correctCount >= count * 0.7 ? 128 : 20, correctCount >= count * 0.7 ? 0 : 60);
-  doc.text('Accuracy: ' + accuracy + '%', 105, 84, { align: 'center' });
+  doc.text('Accuracy: ' + accuracy + '%', 105, 84, {
+    align: 'center'
+  });
   doc.setTextColor(0, 0, 0);
-
   let yPos = 100;
   doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
@@ -443,9 +527,11 @@ async function exportToPDF(practiceLog, count, mode) {
   yPos += 10;
   doc.setTextColor(0, 0, 0);
   doc.setFont(undefined, 'normal');
-
   attemptsToExport.forEach((log, index) => {
-    if (yPos > 270) { doc.addPage(); yPos = 20; }
+    if (yPos > 270) {
+      doc.addPage();
+      yPos = 20;
+    }
     if (index % 2 === 0) {
       doc.setFillColor(244, 246, 249);
       doc.rect(20, yPos - 4, 170, 8, 'F');
@@ -461,30 +547,31 @@ async function exportToPDF(practiceLog, count, mode) {
     doc.setTextColor(0, 0, 0);
     yPos += 8;
   });
-
   doc.setFontSize(8);
   doc.setTextColor(119, 141, 169);
-  doc.text('Generated by Ear Training App', 105, 275, { align: 'center' });
-  doc.text('103-80 Acadia Ave., Markham, Ontario L3R 9V1', 105, 280, { align: 'center' });
-  doc.text('Tel: (905)415-7772 | Email: info@SymphonicMusic.Institute', 105, 285, { align: 'center' });
-
-  // Unique filename: mode + datetime stamp
+  doc.text('Generated by Ear Training App', 105, 275, {
+    align: 'center'
+  });
+  doc.text('103-80 Acadia Ave., Markham, Ontario L3R 9V1', 105, 280, {
+    align: 'center'
+  });
+  doc.text('Tel: (905)415-7772 | Email: info@SymphonicMusic.Institute', 105, 285, {
+    align: 'center'
+  });
   const ts = new Date();
   const pad = n => String(n).padStart(2, '0');
-  const stamp = ts.getFullYear() + pad(ts.getMonth()+1) + pad(ts.getDate()) + '-' + pad(ts.getHours()) + pad(ts.getMinutes()) + pad(ts.getSeconds());
+  const stamp = ts.getFullYear() + pad(ts.getMonth() + 1) + pad(ts.getDate()) + '-' + pad(ts.getHours()) + pad(ts.getMinutes()) + pad(ts.getSeconds());
   doc.save('ear-training-' + mode + '-' + stamp + '.pdf');
 }
-
-// ─── EXPORT BUTTON (shared) ───────────────────────────────────────────────────
-
-function ExportButton({ practiceLog, mode }) {
+function ExportButton({
+  practiceLog,
+  mode
+}) {
   const [showExport, setShowExport] = useState(false);
   const wrapRef = useRef(null);
-
-  // Close on outside click
   useEffect(() => {
     if (!showExport) return;
-    const handler = (e) => {
+    const handler = e => {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
         setShowExport(false);
       }
@@ -492,67 +579,115 @@ function ExportButton({ practiceLog, mode }) {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showExport]);
-
-  return (
-    <div ref={wrapRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-      <button
-        className="btn-secondary"
-        style={{ borderColor: '#415A77', color: '#415A77' }}
-        disabled={practiceLog.length === 0}
-        onClick={() => setShowExport(v => !v)}
-      >
-        Show off to my teacher
-      </button>
-
-      {showExport && practiceLog.length > 0 && (
-        <div className="export-dropdown" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 6 }}>
-          <p style={{ margin: 0 }}>Export last:</p>
-          {[5, 10, 20].map(n => (
-            <button
-              key={n}
-              disabled={practiceLog.length < n}
-              onClick={() => { exportToPDF(practiceLog, n, mode); setShowExport(false); }}
-            >
-              {n} attempts {practiceLog.length < n ? `(need ${n - practiceLog.length} more)` : ''}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    ref: wrapRef,
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-secondary",
+    style: {
+      borderColor: '#415A77',
+      color: '#415A77'
+    },
+    disabled: practiceLog.length === 0,
+    onClick: () => setShowExport(v => !v)
+  }, "Show off to my teacher"), showExport && practiceLog.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "export-dropdown",
+    style: {
+      position: 'absolute',
+      top: '100%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: 0
+    }
+  }, "Export last:"), [5, 10, 20].map(n => /*#__PURE__*/React.createElement("button", {
+    key: n,
+    disabled: practiceLog.length < n,
+    onClick: () => {
+      exportToPDF(practiceLog, n, mode);
+      setShowExport(false);
+    }
+  }, n, " attempts ", practiceLog.length < n ? `(need ${n - practiceLog.length} more)` : ''))));
 }
-
-// ─── HOME SCREEN ──────────────────────────────────────────────────────────────
-
-function HomeScreen({ onSelect }) {
-  return (
-    <div className="app-bg" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
-      <div style={{ width: '100%', maxWidth: 560 }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <h1 style={{ fontSize: 36, color: '#1B263B', margin: '0 0 10px', letterSpacing: '-0.01em' }}>Ear Training</h1>
-          <p style={{ color: '#778DA9', fontSize: 15, margin: 0 }}>Choose a training mode to begin</p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          <div className="mode-card interval" onClick={() => onSelect('interval')}>
-            <span className="mode-icon">🎵</span>
-            <p className="mode-title">Intervals</p>
-            <p className="mode-desc">Identify the distance between two notes played in sequence</p>
-          </div>
-          <div className="mode-card chord" onClick={() => onSelect('chord')}>
-            <span className="mode-icon">🎹</span>
-            <p className="mode-title">Chords</p>
-            <p className="mode-desc">Identify chord quality from triads to seventh chords</p>
-          </div>
-        </div>
-        <p style={{ textAlign: 'center', color: '#c8d4e0', fontSize: 12, marginTop: 32 }}>Piano tone · All modes</p>
-      </div>
-    </div>
-  );
+function HomeScreen({
+  onSelect
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "app-bg",
+    style: {
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '32px 16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: '100%',
+      maxWidth: 560
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      marginBottom: 48
+    }
+  }, /*#__PURE__*/React.createElement("h1", {
+    style: {
+      fontSize: 36,
+      color: '#1B263B',
+      margin: '0 0 10px',
+      letterSpacing: '-0.01em'
+    }
+  }, "Ear Training"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#778DA9',
+      fontSize: 15,
+      margin: 0
+    }
+  }, "Choose a training mode to begin")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mode-card interval",
+    onClick: () => onSelect('interval')
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mode-icon"
+  }, "🎵"), /*#__PURE__*/React.createElement("p", {
+    className: "mode-title"
+  }, "Intervals"), /*#__PURE__*/React.createElement("p", {
+    className: "mode-desc"
+  }, "Identify the distance between two notes played in sequence")), /*#__PURE__*/React.createElement("div", {
+    className: "mode-card chord",
+    onClick: () => onSelect('chord')
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mode-icon"
+  }, "🎹"), /*#__PURE__*/React.createElement("p", {
+    className: "mode-title"
+  }, "Chords"), /*#__PURE__*/React.createElement("p", {
+    className: "mode-desc"
+  }, "Identify chord quality from triads to seventh chords"))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      textAlign: 'center',
+      color: '#c8d4e0',
+      fontSize: 12,
+      marginTop: 32
+    }
+  }, "Piano tone · All modes")));
 }
-
-// ─── INTERVAL TRAINING ────────────────────────────────────────────────────────
-
-function IntervalTraining({ onBack }) {
+function IntervalTraining({
+  onBack
+}) {
   const [page, setPage] = useState('settings');
   const [selected, setSelected] = useState([]);
   const [direction, setDirection] = useState('both');
@@ -564,23 +699,24 @@ function IntervalTraining({ onBack }) {
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [samplerStatus, setSamplerStatus] = useState('idle'); // idle | loading | ready | error
+  const [samplerStatus, setSamplerStatus] = useState('idle');
   const [practiceLog, setPracticeLog] = useState([]);
-
-  const toggle = (iv) => {
+  const toggle = iv => {
     setSelected(prev => prev.includes(iv) ? prev.filter(i => i !== iv) : [...prev, iv]);
     setShowWarning(false);
   };
-
   const generateQuestion = () => {
     const iv = selected[Math.floor(Math.random() * selected.length)];
-    const dir = direction === 'both' ? (Math.random() > 0.5 ? 'ascending' : 'descending') : direction;
+    const dir = direction === 'both' ? Math.random() > 0.5 ? 'ascending' : 'descending' : direction;
     let validNote;
     for (let i = 0; i < 100; i++) {
       const candidate = ALL_NOTES[Math.floor(Math.random() * ALL_NOTES.length)];
       const idx = ALL_NOTES.indexOf(candidate);
       const second = dir === 'ascending' ? idx + iv.semitones : idx - iv.semitones;
-      if (second >= 0 && second < ALL_NOTES.length) { validNote = candidate; break; }
+      if (second >= 0 && second < ALL_NOTES.length) {
+        validNote = candidate;
+        break;
+      }
     }
     setCurrentNote(validNote || 'C4');
     setCurrentInterval(iv);
@@ -589,13 +725,14 @@ function IntervalTraining({ onBack }) {
     setShowResult(false);
     setIsCorrect(false);
   };
-
   const startPractice = () => {
-    if (selected.length === 0) { setShowWarning(true); return; }
+    if (selected.length === 0) {
+      setShowWarning(true);
+      return;
+    }
     generateQuestion();
     setPage('practice');
   };
-
   const playInterval = async () => {
     if (!currentNote || !currentInterval || isPlaying) return;
     setIsPlaying(true);
@@ -611,14 +748,15 @@ function IntervalTraining({ onBack }) {
       const now = Tone.now();
       sampler.triggerAttackRelease(note1, '2n', now);
       sampler.triggerAttackRelease(note2, '2n', now + 1.1);
-      setTimeout(() => { setIsPlaying(false); }, 3500);
+      setTimeout(() => {
+        setIsPlaying(false);
+      }, 3500);
     } catch (e) {
       console.error(e);
       setSamplerStatus('error');
       setIsPlaying(false);
     }
   };
-
   const checkAnswer = () => {
     if (!userAnswer) return;
     const correct = userAnswer === currentInterval.name;
@@ -632,103 +770,228 @@ function IntervalTraining({ onBack }) {
       correct
     }].slice(-50));
   };
-
   if (page === 'settings') {
-    return (
-      <div className="app-bg" style={{ minHeight: '100vh', padding: '32px 16px' }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-            <button className="btn-secondary" onClick={onBack}>← Back</button>
-            <h1 style={{ color: '#1B263B', fontSize: 26, margin: 0 }}>Interval Training</h1>
-          </div>
-
-          <div className="card" style={{ padding: 28, marginBottom: 20 }}>
-            <div className="section-label">Select Intervals</div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => { setSelected([...INTERVALS]); setShowWarning(false); }}>Select All</button>
-              <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setSelected([])}>Clear</button>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              {INTERVALS.map(iv => (
-                <label className="checkbox-row" key={iv.name}>
-                  <input type="checkbox" checked={selected.includes(iv)} onChange={() => toggle(iv)} />
-                  <span>{iv.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="card" style={{ padding: 28, marginBottom: 20 }}>
-            <div className="section-label">Direction</div>
-            {[['ascending','Ascending only'],['descending','Descending only'],['both','Mix (Ascending & Descending)']].map(([val,label]) => (
-              <label className="radio-row" key={val}>
-                <input type="radio" name="dir" value={val} checked={direction === val} onChange={e => setDirection(e.target.value)} />
-                <span>{label}</span>
-              </label>
-            ))}
-          </div>
-
-          {showWarning && <div className="warning-box">Please select at least one interval.</div>}
-          <button className="btn-primary" style={{ width: '100%', padding: '14px' }} onClick={startPractice}>Begin Practice</button>
-        </div>
-      </div>
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      className: "app-bg",
+      style: {
+        minHeight: '100vh',
+        padding: '32px 16px'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        maxWidth: 600,
+        margin: '0 auto'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        marginBottom: 32
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "btn-secondary",
+      onClick: onBack
+    }, "← Back"), /*#__PURE__*/React.createElement("h1", {
+      style: {
+        color: '#1B263B',
+        fontSize: 26,
+        margin: 0
+      }
+    }, "Interval Training")), /*#__PURE__*/React.createElement("div", {
+      className: "card",
+      style: {
+        padding: 28,
+        marginBottom: 20
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "section-label"
+    }, "Select Intervals"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        gap: 8,
+        marginBottom: 16
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "btn-secondary",
+      style: {
+        fontSize: 12
+      },
+      onClick: () => {
+        setSelected([...INTERVALS]);
+        setShowWarning(false);
+      }
+    }, "Select All"), /*#__PURE__*/React.createElement("button", {
+      className: "btn-secondary",
+      style: {
+        fontSize: 12
+      },
+      onClick: () => setSelected([])
+    }, "Clear")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 2
+      }
+    }, INTERVALS.map(iv => /*#__PURE__*/React.createElement("label", {
+      className: "checkbox-row",
+      key: iv.name
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: selected.includes(iv),
+      onChange: () => toggle(iv)
+    }), /*#__PURE__*/React.createElement("span", null, iv.name))))), /*#__PURE__*/React.createElement("div", {
+      className: "card",
+      style: {
+        padding: 28,
+        marginBottom: 20
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "section-label"
+    }, "Direction"), [['ascending', 'Ascending only'], ['descending', 'Descending only'], ['both', 'Mix (Ascending & Descending)']].map(([val, label]) => /*#__PURE__*/React.createElement("label", {
+      className: "radio-row",
+      key: val
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "radio",
+      name: "dir",
+      value: val,
+      checked: direction === val,
+      onChange: e => setDirection(e.target.value)
+    }), /*#__PURE__*/React.createElement("span", null, label)))), showWarning && /*#__PURE__*/React.createElement("div", {
+      className: "warning-box"
+    }, "Please select at least one interval."), /*#__PURE__*/React.createElement("button", {
+      className: "btn-primary",
+      style: {
+        width: '100%',
+        padding: '14px'
+      },
+      onClick: startPractice
+    }, "Begin Practice")));
   }
-
-  return (
-    <div className="app-bg" style={{ minHeight: '100vh', padding: '32px 16px' }}>
-      <div style={{ maxWidth: 560, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-          <h1 style={{ color: '#1B263B', fontSize: 26, margin: 0 }}>Practice Mode</h1>
-          <button className="btn-secondary" onClick={() => { setPage('settings'); setShowResult(false); }}>← Quit</button>
-        </div>
-
-        <div className="card" style={{ padding: 36, marginBottom: 20, textAlign: 'center' }}>
-          <button className="btn-play" style={{ margin: '0 auto' }} onClick={playInterval} disabled={isPlaying}>
-            <span>{isPlaying ? 'Playing...' : 'Play Interval'}</span>
-          </button>
-          {samplerStatus === 'loading' && <p className="loading-hint">Loading piano samples…</p>}
-          {samplerStatus === 'error'   && <p className="loading-hint" style={{ color: '#922b2b' }}>Could not load piano samples.</p>}
-        </div>
-
-        <div className="card" style={{ padding: 28, marginBottom: 20 }}>
-          <label style={{ display: 'block', color: '#778DA9', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>Your Answer</label>
-          <select className="answer-select" value={userAnswer} onChange={e => setUserAnswer(e.target.value)} disabled={showResult}>
-            <option value="">— Select Interval —</option>
-            {selected.map(iv => <option key={iv.name} value={iv.name}>{iv.name}</option>)}
-          </select>
-        </div>
-
-        {!showResult ? (
-          <button className="btn-primary" style={{ width: '100%', padding: '14px' }} onClick={checkAnswer} disabled={!userAnswer}>
-            Submit Answer
-          </button>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className={isCorrect ? 'result-correct' : 'result-wrong'}>
-              <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>{isCorrect ? 'Correct!' : 'Incorrect'}</div>
-              <div style={{ fontSize: 14, opacity: 0.85 }}>
-                Answer: <strong>{currentInterval.name}</strong> ({currentDir})
-              </div>
-            </div>
-            <button className="btn-primary" style={{ width: '100%', padding: '14px' }} onClick={generateQuestion}>Next Question</button>
-          </div>
-        )}
-
-        <hr className="divider" />
-        <ExportButton practiceLog={practiceLog} mode="interval" />
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "app-bg",
+    style: {
+      minHeight: '100vh',
+      padding: '32px 16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: 560,
+      margin: '0 auto'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 32
+    }
+  }, /*#__PURE__*/React.createElement("h1", {
+    style: {
+      color: '#1B263B',
+      fontSize: 26,
+      margin: 0
+    }
+  }, "Practice Mode"), /*#__PURE__*/React.createElement("button", {
+    className: "btn-secondary",
+    onClick: () => {
+      setPage('settings');
+      setShowResult(false);
+    }
+  }, "← Quit")), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 36,
+      marginBottom: 20,
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-play",
+    style: {
+      margin: '0 auto'
+    },
+    onClick: playInterval,
+    disabled: isPlaying
+  }, /*#__PURE__*/React.createElement("span", null, isPlaying ? 'Playing...' : 'Play Interval')), samplerStatus === 'loading' && /*#__PURE__*/React.createElement("p", {
+    className: "loading-hint"
+  }, "Loading piano samples…"), samplerStatus === 'error' && /*#__PURE__*/React.createElement("p", {
+    className: "loading-hint",
+    style: {
+      color: '#922b2b'
+    }
+  }, "Could not load piano samples.")), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 28,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: 'block',
+      color: '#778DA9',
+      fontSize: 12,
+      letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+      marginBottom: 10
+    }
+  }, "Your Answer"), /*#__PURE__*/React.createElement("select", {
+    className: "answer-select",
+    value: userAnswer,
+    onChange: e => setUserAnswer(e.target.value),
+    disabled: showResult
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "— Select Interval —"), selected.map(iv => /*#__PURE__*/React.createElement("option", {
+    key: iv.name,
+    value: iv.name
+  }, iv.name)))), !showResult ? /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary",
+    style: {
+      width: '100%',
+      padding: '14px'
+    },
+    onClick: checkAnswer,
+    disabled: !userAnswer
+  }, "Submit Answer") : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: isCorrect ? 'result-correct' : 'result-wrong'
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 22,
+      fontWeight: 700,
+      marginBottom: 6
+    }
+  }, isCorrect ? 'Correct!' : 'Incorrect'), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      opacity: 0.85
+    }
+  }, "Answer: ", /*#__PURE__*/React.createElement("strong", null, currentInterval.name), " (", currentDir, ")")), /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary",
+    style: {
+      width: '100%',
+      padding: '14px'
+    },
+    onClick: generateQuestion
+  }, "Next Question")), /*#__PURE__*/React.createElement("hr", {
+    className: "divider"
+  }), /*#__PURE__*/React.createElement(ExportButton, {
+    practiceLog: practiceLog,
+    mode: "interval"
+  })));
 }
-
-// ─── CHORD TRAINING ───────────────────────────────────────────────────────────
-
-function ChordTraining({ onBack }) {
+function ChordTraining({
+  onBack
+}) {
   const [page, setPage] = useState('settings');
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [showWarning, setShowWarning] = useState(false);
-  const [currentVoicing, setCurrentVoicing] = useState(null); // { label, semitones }
+  const [currentVoicing, setCurrentVoicing] = useState(null);
   const [currentRoot, setCurrentRoot] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
@@ -736,25 +999,14 @@ function ChordTraining({ onBack }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [samplerStatus, setSamplerStatus] = useState('idle');
   const [practiceLog, setPracticeLog] = useState([]);
-
-  // Build flat list of available answer options from selected chords
-  const answerOptions = CHORDS
-    .filter(c => selectedKeys.includes(c.key))
-    .flatMap(c => c.voicings.map(v => v.label));
-
-  const toggleChord = (key) => {
+  const answerOptions = CHORDS.filter(c => selectedKeys.includes(c.key)).flatMap(c => c.voicings.map(v => v.label));
+  const toggleChord = key => {
     setSelectedKeys(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
     setShowWarning(false);
   };
-
   const generateQuestion = () => {
-    // Gather all voicings from selected chords
-    const pool = CHORDS
-      .filter(c => selectedKeys.includes(c.key))
-      .flatMap(c => c.voicings);
+    const pool = CHORDS.filter(c => selectedKeys.includes(c.key)).flatMap(c => c.voicings);
     const voicing = pool[Math.floor(Math.random() * pool.length)];
-
-    // Find a root note where all chord tones fit in range
     const maxSemitone = Math.max(...voicing.semitones);
     let validRoot;
     for (let i = 0; i < 200; i++) {
@@ -762,7 +1014,10 @@ function ChordTraining({ onBack }) {
       const rootMidi = noteToMidi(candidate);
       const topMidi = rootMidi + maxSemitone;
       const topNote = midiToNote(topMidi);
-      if (ALL_NOTES.includes(topNote)) { validRoot = candidate; break; }
+      if (ALL_NOTES.includes(topNote)) {
+        validRoot = candidate;
+        break;
+      }
     }
     setCurrentRoot(validRoot || 'C4');
     setCurrentVoicing(voicing);
@@ -770,13 +1025,14 @@ function ChordTraining({ onBack }) {
     setShowResult(false);
     setIsCorrect(false);
   };
-
   const startPractice = () => {
-    if (selectedKeys.length === 0) { setShowWarning(true); return; }
+    if (selectedKeys.length === 0) {
+      setShowWarning(true);
+      return;
+    }
     generateQuestion();
     setPage('practice');
   };
-
   const playChord = async () => {
     if (!currentRoot || !currentVoicing || isPlaying) return;
     setIsPlaying(true);
@@ -789,14 +1045,15 @@ function ChordTraining({ onBack }) {
       const notes = currentVoicing.semitones.map(s => midiToNote(rootMidi + s));
       const now = Tone.now();
       sampler.triggerAttackRelease(notes, '2', now);
-      setTimeout(() => { setIsPlaying(false); }, 3000);
+      setTimeout(() => {
+        setIsPlaying(false);
+      }, 3000);
     } catch (e) {
       console.error(e);
       setSamplerStatus('error');
       setIsPlaying(false);
     }
   };
-
   const checkAnswer = () => {
     if (!userAnswer) return;
     const correct = userAnswer === currentVoicing.label;
@@ -809,105 +1066,244 @@ function ChordTraining({ onBack }) {
       correct
     }].slice(-50));
   };
-
   if (page === 'settings') {
-    return (
-      <div className="app-bg" style={{ minHeight: '100vh', padding: '32px 16px' }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-            <button className="btn-secondary" onClick={onBack}>← Back</button>
-            <h1 style={{ color: '#1B263B', fontSize: 26, margin: 0 }}>Chord Training</h1>
-          </div>
-
-          <div className="card" style={{ padding: 28, marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div className="section-label" style={{ margin: 0 }}>Select Chords</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => { setSelectedKeys(CHORDS.map(c => c.key)); setShowWarning(false); }}>Select All</button>
-                <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setSelectedKeys([])}>Clear</button>
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              {CHORDS.map(chord => (
-                <label className="checkbox-row" key={chord.key}>
-                  <input type="checkbox" checked={selectedKeys.includes(chord.key)} onChange={() => toggleChord(chord.key)} />
-                  <span>
-                    {chord.name}
-                    {chord.badge && <span className="tag-badge">{chord.badge}</span>}
-                  </span>
-                </label>
-              ))}
-            </div>
-            <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(65,90,119,0.08)', borderRadius: 8, fontSize: 12, color: '#415A77', lineHeight: 1.6 }}>
-              Note: Chords marked <span style={{ color: '#1B263B', fontWeight: 600 }}>Root &amp; 1st Inv.</span> play both voicings randomly, identify which one you hear.
-            </div>
-          </div>
-
-          {showWarning && <div className="warning-box">Please select at least one chord type.</div>}
-          <button className="btn-primary" style={{ width: '100%', padding: '14px' }} onClick={startPractice}>Begin Practice</button>
-        </div>
-      </div>
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      className: "app-bg",
+      style: {
+        minHeight: '100vh',
+        padding: '32px 16px'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        maxWidth: 600,
+        margin: '0 auto'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        marginBottom: 32
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "btn-secondary",
+      onClick: onBack
+    }, "← Back"), /*#__PURE__*/React.createElement("h1", {
+      style: {
+        color: '#1B263B',
+        fontSize: 26,
+        margin: 0
+      }
+    }, "Chord Training")), /*#__PURE__*/React.createElement("div", {
+      className: "card",
+      style: {
+        padding: 28,
+        marginBottom: 20
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 12
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "section-label",
+      style: {
+        margin: 0
+      }
+    }, "Select Chords"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        gap: 8
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "btn-secondary",
+      style: {
+        fontSize: 12
+      },
+      onClick: () => {
+        setSelectedKeys(CHORDS.map(c => c.key));
+        setShowWarning(false);
+      }
+    }, "Select All"), /*#__PURE__*/React.createElement("button", {
+      className: "btn-secondary",
+      style: {
+        fontSize: 12
+      },
+      onClick: () => setSelectedKeys([])
+    }, "Clear"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 2
+      }
+    }, CHORDS.map(chord => /*#__PURE__*/React.createElement("label", {
+      className: "checkbox-row",
+      key: chord.key
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: selectedKeys.includes(chord.key),
+      onChange: () => toggleChord(chord.key)
+    }), /*#__PURE__*/React.createElement("span", null, chord.name, chord.badge && /*#__PURE__*/React.createElement("span", {
+      className: "tag-badge"
+    }, chord.badge))))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 14,
+        padding: '10px 12px',
+        background: 'rgba(65,90,119,0.08)',
+        borderRadius: 8,
+        fontSize: 12,
+        color: '#415A77',
+        lineHeight: 1.6
+      }
+    }, "Note: Chords marked ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: '#1B263B',
+        fontWeight: 600
+      }
+    }, "Root & 1st Inv."), " play both voicings randomly, identify which one you hear.")), showWarning && /*#__PURE__*/React.createElement("div", {
+      className: "warning-box"
+    }, "Please select at least one chord type."), /*#__PURE__*/React.createElement("button", {
+      className: "btn-primary",
+      style: {
+        width: '100%',
+        padding: '14px'
+      },
+      onClick: startPractice
+    }, "Begin Practice")));
   }
-
-  return (
-    <div className="app-bg" style={{ minHeight: '100vh', padding: '32px 16px' }}>
-      <div style={{ maxWidth: 560, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-          <h1 style={{ color: '#1B263B', fontSize: 26, margin: 0 }}>Practice Mode</h1>
-          <button className="btn-secondary" onClick={() => { setPage('settings'); setShowResult(false); }}>← Quit</button>
-        </div>
-
-        <div className="card" style={{ padding: 36, marginBottom: 20, textAlign: 'center' }}>
-          <button className="btn-play" style={{ margin: '0 auto' }} onClick={playChord} disabled={isPlaying}>
-            <span>{isPlaying ? 'Playing...' : 'Play Chord'}</span>
-          </button>
-          {samplerStatus === 'loading' && <p className="loading-hint">Loading piano samples…</p>}
-          {samplerStatus === 'error'   && <p className="loading-hint" style={{ color: '#922b2b' }}>Could not load piano samples.</p>}
-        </div>
-
-        <div className="card" style={{ padding: 28, marginBottom: 20 }}>
-          <label style={{ display: 'block', color: '#778DA9', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>Your Answer</label>
-          <select className="answer-select" value={userAnswer} onChange={e => setUserAnswer(e.target.value)} disabled={showResult}>
-            <option value="">— Select Chord —</option>
-            {answerOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-          </select>
-        </div>
-
-        {!showResult ? (
-          <button className="btn-primary" style={{ width: '100%', padding: '14px' }} onClick={checkAnswer} disabled={!userAnswer}>
-            Submit Answer
-          </button>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className={isCorrect ? 'result-correct' : 'result-wrong'}>
-              <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>{isCorrect ? 'Correct!' : 'Incorrect'}</div>
-              <div style={{ fontSize: 14, opacity: 0.85 }}>
-                Answer: <strong>{currentVoicing.label}</strong>
-              </div>
-            </div>
-            <button className="btn-primary" style={{ width: '100%', padding: '14px' }} onClick={generateQuestion}>Next Question</button>
-          </div>
-        )}
-
-        <hr className="divider" />
-        <ExportButton practiceLog={practiceLog} mode="chord" />
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "app-bg",
+    style: {
+      minHeight: '100vh',
+      padding: '32px 16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: 560,
+      margin: '0 auto'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 32
+    }
+  }, /*#__PURE__*/React.createElement("h1", {
+    style: {
+      color: '#1B263B',
+      fontSize: 26,
+      margin: 0
+    }
+  }, "Practice Mode"), /*#__PURE__*/React.createElement("button", {
+    className: "btn-secondary",
+    onClick: () => {
+      setPage('settings');
+      setShowResult(false);
+    }
+  }, "← Quit")), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 36,
+      marginBottom: 20,
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-play",
+    style: {
+      margin: '0 auto'
+    },
+    onClick: playChord,
+    disabled: isPlaying
+  }, /*#__PURE__*/React.createElement("span", null, isPlaying ? 'Playing...' : 'Play Chord')), samplerStatus === 'loading' && /*#__PURE__*/React.createElement("p", {
+    className: "loading-hint"
+  }, "Loading piano samples…"), samplerStatus === 'error' && /*#__PURE__*/React.createElement("p", {
+    className: "loading-hint",
+    style: {
+      color: '#922b2b'
+    }
+  }, "Could not load piano samples.")), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 28,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: 'block',
+      color: '#778DA9',
+      fontSize: 12,
+      letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+      marginBottom: 10
+    }
+  }, "Your Answer"), /*#__PURE__*/React.createElement("select", {
+    className: "answer-select",
+    value: userAnswer,
+    onChange: e => setUserAnswer(e.target.value),
+    disabled: showResult
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "— Select Chord —"), answerOptions.map(opt => /*#__PURE__*/React.createElement("option", {
+    key: opt,
+    value: opt
+  }, opt)))), !showResult ? /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary",
+    style: {
+      width: '100%',
+      padding: '14px'
+    },
+    onClick: checkAnswer,
+    disabled: !userAnswer
+  }, "Submit Answer") : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: isCorrect ? 'result-correct' : 'result-wrong'
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 22,
+      fontWeight: 700,
+      marginBottom: 6
+    }
+  }, isCorrect ? 'Correct!' : 'Incorrect'), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      opacity: 0.85
+    }
+  }, "Answer: ", /*#__PURE__*/React.createElement("strong", null, currentVoicing.label))), /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary",
+    style: {
+      width: '100%',
+      padding: '14px'
+    },
+    onClick: generateQuestion
+  }, "Next Question")), /*#__PURE__*/React.createElement("hr", {
+    className: "divider"
+  }), /*#__PURE__*/React.createElement(ExportButton, {
+    practiceLog: practiceLog,
+    mode: "chord"
+  })));
 }
-
-// ─── ROOT APP ────────────────────────────────────────────────────────────────
-
 function App() {
-  const [mode, setMode] = useState('home'); // 'home' | 'interval' | 'chord'
-  if (mode === 'home')     return <HomeScreen onSelect={setMode} />;
-  if (mode === 'interval') return <IntervalTraining onBack={() => setMode('home')} />;
-  if (mode === 'chord')    return <ChordTraining onBack={() => setMode('home')} />;
+  const [mode, setMode] = useState('home');
+  if (mode === 'home') return /*#__PURE__*/React.createElement(HomeScreen, {
+    onSelect: setMode
+  });
+  if (mode === 'interval') return /*#__PURE__*/React.createElement(IntervalTraining, {
+    onBack: () => setMode('home')
+  });
+  if (mode === 'chord') return /*#__PURE__*/React.createElement(ChordTraining, {
+    onBack: () => setMode('home')
+  });
 }
-
 const root = ReactDOM.createRoot(document.getElementById('app'));
-root.render(<App />);
+root.render(/*#__PURE__*/React.createElement(App, null));
 </script>
 </body>
 </html>
